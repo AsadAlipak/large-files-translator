@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Urdu PDF Translator</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; background: #f0f2f5; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .upload-btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        #status { margin-top: 15px; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>English to Urdu PDF</h2>
+        <input type="file" id="pdfInput" accept=".pdf" style="display: none;">
+        <button class="upload-btn" onclick="document.getElementById('pdfInput').click()">Select PDF</button>
+        <div id="status">Ready to translate.</div>
+        <button id="dlBtn" style="display:none; margin-top:10px;">Download Urdu PDF</button>
+    </div>
+    <script>
+        const pdfInput = document.getElementById('pdfInput');
+        pdfInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            document.getElementById('status').innerText = "Translating... please wait.";
+            
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/api/translate', { method: 'POST', body: formData });
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const dlBtn = document.getElementById('dlBtn');
+                dlBtn.style.display = 'block';
+                dlBtn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "translated_urdu.pdf";
+                    a.click();
+                };
+                document.getElementById('status').innerText = "Done!";
+            } else {
+                document.getElementById('status').innerText = "Translation failed.";
+            }
+        };
+    </script>
+</body>
+</html>
